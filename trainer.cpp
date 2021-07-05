@@ -168,6 +168,7 @@ uintptr_t GetModuleBaseAddress(DWORD processId, const CHAR* modName) {
 }
 
 // openprocess handle, baseptr, offsets as vector. use this for traversing pointer chains with offsets
+// haven't used this yet, but i'm keeping it here because it's extremely helpful in the event that i need it.
 uintptr_t findAddress(HANDLE hProc, uintptr_t ptr, vector<unsigned int> offsets) {
 	uintptr_t addr = ptr;
 	for (unsigned int i = 0; i < offsets.size(); ++i) {
@@ -180,6 +181,7 @@ uintptr_t findAddress(HANDLE hProc, uintptr_t ptr, vector<unsigned int> offsets)
 int main() {
 
 	DWORD process = GetProcId("ac_client.exe");
+	// cast dword to uint just in case it doesnt play well
 	cout << "Process ID retrieved: " << (unsigned int) process << endl; 
 	HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, NULL, process);
 	
@@ -190,56 +192,66 @@ int main() {
 	else {
 		cout << "Got handle from process" << endl;
 		uintptr_t moduleBase = GetModuleBaseAddress(process, "ac_client.exe");
-		cout << "Got base address of module: " << hex << moduleBase << endl;
+		cout << "Got base address of module: 0x" << hex << moduleBase << endl;
 
-		uintptr_t playerObject;
-		ReadProcessMemory(hProcess, (LPCVOID)(moduleBase + 0x00109B74), &playerObject, sizeof(uintptr_t), NULL);
+		uintptr_t playerObject = moduleBase + 0x00109B74;
+		cout << "player object is " << playerObject << endl;
 
-		uintptr_t x = playerObject + 0x34;
-		uintptr_t y = playerObject + 0x38;
-		uintptr_t z = playerObject + 0x3C;
+		// interesting stuff here, sizeof(unsigned int) on third parameter of this function was returning 6 bytes which caused me a few hours of frustration.	
+		// changing it to flat out four bytes fixed it. very strange!
+		if(ReadProcessMemory(hProcess, (BYTE*) playerObject, &playerObject, 4, NULL) == 0) {
+			displayError("calling RPM in main() to resolve player object offset");
+		}
+		else {
+			cout << "player object is " << playerObject << endl;
 
-		uintptr_t health = playerObject + 0xF8;
-		uintptr_t armour = playerObject + 0xFC;
+			uintptr_t x = playerObject + 0x34;
+			uintptr_t y = playerObject + 0x38;
+			uintptr_t z = playerObject + 0x3C;
 
-		uintptr_t secondaryWeaponReserve = playerObject + 0x114;
-		uintptr_t secondaryWeapon = playerObject + 0x13C;
+			uintptr_t health = playerObject + 0xF8;
+			uintptr_t armour = playerObject + 0xFC;
 
-		uintptr_t primaryWeaponReserve = playerObject + 0x128;
-		uintptr_t primaryWeapon = playerObject + 0x150;
+			uintptr_t secondaryWeaponReserve = playerObject + 0x114;
+			uintptr_t secondaryWeapon = playerObject + 0x13C;
 
-		cout << "Menu has successfully started." << endl;
-		cout << endl;
-		Sleep(3000);
-		system("CLS");
-		displayInstructions();
+			uintptr_t primaryWeaponReserve = playerObject + 0x128;
+			uintptr_t primaryWeapon = playerObject + 0x150;
 
-		vector<unsigned int> virtualKeys = {VK_NUMPAD0, VK_NUMPAD1, VK_NUMPAD2, VK_NUMPAD3, VK_NUMPAD4};
-		while(true) {
-			for(int i = 0; i < virtualKeys.size(); i++) {
-				// https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getkeystate
-				// if short return value has MSB of 1, then key is down. use bitwise AND to determine if this is true
-				if(GetKeyState(virtualKeys[i]) & 0x8000) {
-					if(i == 0) {
-						godMode(health, hProcess);
-					}
-					else if(i == 1) {
-						infinitePrimary(primaryWeapon, primaryWeaponReserve, hProcess);
-					}
-					else if(i == 2) {
-						infiniteSecondary(secondaryWeapon, secondaryWeaponReserve, hProcess);
+			cout << "Menu has successfully started." << endl;
+			cout << endl;
+			Sleep(3000);
+			system("CLS");
+			displayInstructions();
 
-					}
-					else if(i == 3) {
-						infiniteArmour(armour, hProcess);
-					}
-					else {
-						teleport(x, y, z, hProcess);
+			vector<unsigned int> virtualKeys = {VK_NUMPAD0, VK_NUMPAD1, VK_NUMPAD2, VK_NUMPAD3, VK_NUMPAD4};
+			while(true) {
+				for(int i = 0; i < virtualKeys.size(); i++) {
+					// https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getkeystate
+					// if short return value has MSB of 1, then key is down. use bitwise AND to determine if this is true
+					if(GetKeyState(virtualKeys[i]) & 0x8000) {
+						if(i == 0) {
+							godMode(health, hProcess);
+						}
+						else if(i == 1) {
+							infinitePrimary(primaryWeapon, primaryWeaponReserve, hProcess);
+						}
+						else if(i == 2) {
+							infiniteSecondary(secondaryWeapon, secondaryWeaponReserve, hProcess);
+
+						}
+						else if(i == 3) {
+							infiniteArmour(armour, hProcess);
+						}
+						else {
+							teleport(x, y, z, hProcess);
+						}
 					}
 				}
 			}
 		}
 	}
+
 	CloseHandle(hProcess);
 	return 0;
 }
