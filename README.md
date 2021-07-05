@@ -4,5 +4,5 @@
 # Start up screen when you launch the menu.
 ![Screenshot](https://github.com/robertmotr/assault-cube-external-trainer/blob/main/screenshot1.PNG)
 
-# After start up is complete, menu is displayed and you control it using numpad.
+# After start up is complete, the menu is displayed and you control it using your numpad.
 ![Screenshot](https://github.com/robertmotr/assault-cube-external-trainer/blob/main/screenshot2.PNG)
