@@ -195,7 +195,6 @@ int main() {
 		cout << "Got base address of module: 0x" << hex << moduleBase << endl;
 
 		uintptr_t playerObject = moduleBase + 0x00109B74;
-		cout << "player object is " << playerObject << endl;
 
 		// interesting stuff here, sizeof(unsigned int) on third parameter of this function was returning 6 bytes which caused me a few hours of frustration.	
 		// changing it to flat out four bytes fixed it. very strange!
@@ -203,8 +202,6 @@ int main() {
 			displayError("calling RPM in main() to resolve player object offset");
 		}
 		else {
-			cout << "player object is " << playerObject << endl;
-
 			uintptr_t x = playerObject + 0x34;
 			uintptr_t y = playerObject + 0x38;
 			uintptr_t z = playerObject + 0x3C;
