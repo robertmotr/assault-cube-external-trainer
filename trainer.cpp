@@ -204,6 +204,7 @@ int main()
 {
 	cout << "This cheat for Assault Cube was made by Robert Motrogeanu for educational purposes and its contents is published freely on my GitHub." << endl;
 	cout << "github.com/robertmotr" << endl;
+	cout << endl;
 
 	DWORD process = GetProcId("ac_client.exe");
 	// cast dword to uint just in case it doesnt play well
