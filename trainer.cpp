@@ -16,21 +16,21 @@ using namespace std;
 	TODO: add constructor to struct allowing pointer to playerObject, let the constructor determine offsets for all the values
 /**/
 struct playerEntity {
-	float x;						// 0x34
-	float y;						// 0x38
-	float z;						// 0x3C
+	float x;	// 0x34
+	float y;	// 0x38
+	float z;	// 0x3C
 
-	float yaw; 						// 0x40
-	float pitch;  					// 0x44
+	float yaw;	// 0x40
+	float pitch;	// 0x44
 
-	unsigned int hp;				// 0xF8
-	unsigned int armour; 			// 0xFC
+	unsigned int hp;	// 0xF8
+	unsigned int armour;	// 0xFC
 
 	unsigned int sWeaponReserve; 	// 0x114
 	unsigned int pWeaponReserve; 	// 0x128
 
-	unsigned int sWeapon;			// 0x13C
-	unsigned int pWeapon;			// 0x150
+	unsigned int sWeapon;	// 0x13C
+	unsigned int pWeapon;	// 0x150
 };
 
 // Error occured while (stuff here):\n GetLastError()
