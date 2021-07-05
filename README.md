@@ -6,3 +6,6 @@
 
 # After start up is complete, the menu is displayed and you control it using your numpad.
 ![Screenshot](https://github.com/robertmotr/assault-cube-external-trainer/blob/main/screenshot2.PNG)
+
+# When numpad options 0, 1, 2, and 3 are turned on.
+![Screenshot](https://github.com/robertmotr/assault-cube-external-trainer/blob/main/screenshot3.PNG)
