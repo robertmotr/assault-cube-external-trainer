@@ -40,33 +40,57 @@ void displayError(string typefailure) {
 }
 
 void displayInstructions() {
-		cout << "[Numpad 0]		Enable god mode" << endl;
-		cout << "[Numpad 1]		Enable infinite primary weapon ammo" << endl;
-		cout << "[Numpad 2]		Enable infinite secondary weapon ammo" << endl;
-		cout << "[Numpad 3] 	Enable infinite armour" << endl;
-		cout << "[Numpad 4] 	Teleport using X, Y and Z co-ordinates" << endl;
+		cout << "[Numpad 0]	Enable god mode" << endl;
+		cout << "[Numpad 1]	Enable infinite primary weapon ammo" << endl;
+		cout << "[Numpad 2]	Enable infinite secondary weapon ammo" << endl;
+		cout << "[Numpad 3]	Enable infinite armour" << endl;
+		cout << "[Numpad 4]	Teleport using X, Y and Z co-ordinates" << endl;
 }
 
 void godMode(const uintptr_t &health, const HANDLE &handleProcess) {
 	int newHealth = 999999;
 	WriteProcessMemory(handleProcess, (LPVOID) health, &newHealth, sizeof(newHealth), NULL);
+
+	cout << endl;
+	cout << "Enabled god mode." << endl;
+	Sleep(3000);
+	system("CLS");
+	displayInstructions();
 }
 
 void infinitePrimary(const uintptr_t &pWeapon, const uintptr_t &pReserve, const HANDLE &handleProcess) {
 	int newAmmo = 99999;
 	WriteProcessMemory(handleProcess, (LPVOID) pWeapon, &newAmmo, sizeof(newAmmo), NULL);
 	WriteProcessMemory(handleProcess, (LPVOID) pReserve, &newAmmo, sizeof(newAmmo), NULL);
+
+	cout << endl;
+	cout << "Enabled infinite primary ammo." << endl;
+	Sleep(3000);
+	system("CLS");
+	displayInstructions();
 }
 
 void infiniteSecondary(const uintptr_t &sWeapon, const uintptr_t &sReserve, const HANDLE &handleProcess) {
 	int newAmmo = 99999;
 	WriteProcessMemory(handleProcess, (LPVOID) sWeapon, &newAmmo, sizeof(newAmmo), NULL);
 	WriteProcessMemory(handleProcess, (LPVOID) sReserve, &newAmmo, sizeof(newAmmo), NULL);
+
+	cout << endl;
+	cout << "Enabled infinite secondary ammo." << endl;
+	Sleep(3000);
+	system("CLS");
+	displayInstructions();
 }
 
 void infiniteArmour(const uintptr_t &armour, const HANDLE &handleProcess) {
 	int newArmour = 99999;
 	WriteProcessMemory(handleProcess, (LPVOID) armour, &newArmour, sizeof(newArmour), NULL);
+
+	cout << endl;
+	cout << "Enabled infinite armour." << endl;
+	Sleep(3000);
+	system("CLS");
+	displayInstructions();
 }
 
 void teleport(const uintptr_t &px, const uintptr_t &py, const uintptr_t &pz, const HANDLE &handleProcess) {
@@ -79,6 +103,9 @@ void teleport(const uintptr_t &px, const uintptr_t &py, const uintptr_t &pz, con
 	WriteProcessMemory(handleProcess, (LPVOID) py, &y, sizeof(y), NULL);
 	WriteProcessMemory(handleProcess, (LPVOID) pz, &z, sizeof(z), NULL);
 
+	cout << endl;
+	cout << "Teleported to location." << endl;
+	Sleep(3000);
 	system("CLS");
 	displayInstructions();
 }
@@ -163,7 +190,7 @@ int main() {
 	else {
 		cout << "Got handle from process" << endl;
 		uintptr_t moduleBase = GetModuleBaseAddress(process, "ac_client.exe");
-		cout << "Got base address of module: " << moduleBase << endl;
+		cout << "Got base address of module: " << hex << moduleBase << endl;
 
 		uintptr_t playerObject;
 		ReadProcessMemory(hProcess, (LPCVOID)(moduleBase + 0x00109B74), &playerObject, sizeof(uintptr_t), NULL);
@@ -184,6 +211,7 @@ int main() {
 		cout << "Menu has successfully started." << endl;
 		cout << endl;
 		Sleep(3000);
+		system("CLS");
 		displayInstructions();
 
 		vector<unsigned int> virtualKeys = {VK_NUMPAD0, VK_NUMPAD1, VK_NUMPAD2, VK_NUMPAD3, VK_NUMPAD4};
