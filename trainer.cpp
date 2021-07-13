@@ -251,36 +251,24 @@ int main()
 			system("CLS");
 			displayInstructions();
 
-			vector<unsigned int> virtualKeys = {VK_NUMPAD0, VK_NUMPAD1, VK_NUMPAD2, VK_NUMPAD3, VK_NUMPAD4};
 			while (true)
 			{
-				for (int i = 0; i < virtualKeys.size(); i++)
-				{
-					// https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getkeystate
-					// if short return value has MSB of 1, then key is down. use bitwise AND to determine if this is true
-					if (GetKeyState(virtualKeys[i]) & 0x8000)
-					{
-						if (i == 0)
-						{
-							godMode(health, hProcess);
-						}
-						else if (i == 1)
-						{
-							infinitePrimary(primaryWeapon, primaryWeaponReserve, hProcess);
-						}
-						else if (i == 2)
-						{
-							infiniteSecondary(secondaryWeapon, secondaryWeaponReserve, hProcess);
-						}
-						else if (i == 3)
-						{
-							infiniteArmour(armour, hProcess);
-						}
-						else
-						{
-							teleport(x, y, z, hProcess);
-						}
-					}
+				// https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getkeystate
+				// if short return value has MSB of 1, then key is down. use bitwise AND to determine if this is true
+				if(GetAsyncKeyState(VK_NUMPAD0) & 0x8000) {
+					godMode(health, hProcess);
+				}
+				else if(GetAsyncKeyState(VK_NUMPAD1) & 0x8000) {
+					infinitePrimary(primaryWeapon, primaryWeaponReserve, hProcess);
+				}
+				else if(GetAsyncKeyState(VK_NUMPAD2) & 0x8000) {
+					infiniteSecondary(secondaryWeapon, secondaryWeaponReserve, hProcess);
+				}
+				else if(GetAsyncKeyState(VK_NUMPAD3) & 0x8000) {
+					infiniteArmour(armour, hProcess);
+				}
+				else if(GetAsyncKeyState(VK_NUMPAD4) & 0x8000) {
+					teleport(x, y, z, hProcess);
 				}
 			}
 		}
