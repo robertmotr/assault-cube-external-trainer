@@ -15,14 +15,50 @@ using namespace std;
 	So far, I've found this offset pretty reliable and I would recommend using this.
 	TODO: add constructor to struct allowing pointer to playerObject, let the constructor determine offsets for all the values
 /**/
+
+
+//use template to save time and avoid potential bug
+template <typename T>
+void WriteMem(HANDLE handleProcess, LPVOID address, const T& value)
+{
+	WriteProcessMemory(handleProcess, address, &value, sizeof(value), NULL);
+}
+
+//why do I make struct?
+//because Windows Memory reading/writing functions are VERY expensive
+//writing a chunk of data at once efficiently speed your chear hax
+//https://www.unknowncheats.me/forum/general-programming-and-reversing/347717-rpm-benchmark-data-size-matter.html
+struct Position
+{
+	float x;
+	float y;
+	float z;
+};
+
+struct Angle
+{
+	//a bit strange, because most of the video games have orders in pitch -> yaw -> roll
+	//pitch vertical angle, yaw horizontal angle
+	float yaw;
+	float pitch;
+	//float roll
+};
+
 struct playerEntity
 {
-	float x; // 0x34
-	float y; // 0x38
-	float z; // 0x3C
+	/*
+	float x;
+	float y;
+	float z;
+	*/
+	Position pos;// 0x34
 
-	float yaw;	 // 0x40
-	float pitch; // 0x44
+
+	/*
+	float yaw;
+	float pitch;
+	*/
+	Angle angle; // 0x40
 
 	unsigned int hp;	 // 0xF8
 	unsigned int armour; // 0xFC
@@ -35,7 +71,10 @@ struct playerEntity
 };
 
 // Error occured while (stuff here):\n GetLastError()
-void displayError(string typefailure)
+
+//you seriously want to copy the whole string?
+//void displayError(string typefailure)
+void displayError(const string& typefailure)
 {
 	cout << "Error occurred while " + typefailure + ":\n"
 		 << GetLastError() << endl;
@@ -44,82 +83,101 @@ void displayError(string typefailure)
 
 void displayInstructions()
 {
-	cout << "[Numpad 0]	Enable god mode" << endl;
-	cout << "[Numpad 1]	Enable infinite primary weapon ammo" << endl;
-	cout << "[Numpad 2]	Enable infinite secondary weapon ammo" << endl;
-	cout << "[Numpad 3]	Enable infinite armour" << endl;
+	cout << "[Numpad 0]	Enable god mode\n";// << endl;
+	cout << "[Numpad 1]	Enable infinite primary weapon ammo\n";// << endl;
+	cout << "[Numpad 2]	Enable infinite secondary weapon ammo\n";// << endl;
+	cout << "[Numpad 3]	Enable infinite armour\n";// << endl;
 	cout << "[Numpad 4]	Teleport using X, Y and Z co-ordinates" << endl;
 }
 
-void godMode(const uintptr_t &health, const HANDLE &handleProcess)
+//uintptr_t size is 4 byte, while pointer may be 4/8 bytes. 
+//However, dereference the pointer costs a few more instructions, so copy value is faster
+void godMode(uintptr_t healthAddr, HANDLE handleProcess)
 {
 	int newHealth = 999999;
-	WriteProcessMemory(handleProcess, (LPVOID)health, &newHealth, sizeof(newHealth), NULL);
 
-	cout << endl;
-	cout << "Enabled god mode." << endl;
+	//template time!
+	WriteMem(handleProcess, healthAddr, newHealth);
+	//WriteProcessMemory(handleProcess, (LPVOID)health, &newHealth, sizeof(newHealth), NULL);
+
+	//endl flushes the buffer for no reason
+	//https://www.hellocodies.com/endl-and-n/
+	//cout << endl;
+	cout << "\nEnabled god mode." << endl;
 	Sleep(3000);
 	system("CLS");
 	displayInstructions();
 }
 
-void infinitePrimary(const uintptr_t &pWeapon, const uintptr_t &pReserve, const HANDLE &handleProcess)
+void infinitePrimary(uintptr_t pWeaponAddr, uintptr_t pReserveAddr, HANDLE handleProcess)
 {
 	int newAmmo = 99999;
-	WriteProcessMemory(handleProcess, (LPVOID)pWeapon, &newAmmo, sizeof(newAmmo), NULL);
-	WriteProcessMemory(handleProcess, (LPVOID)pReserve, &newAmmo, sizeof(newAmmo), NULL);
+	WriteMem(handleProcess, pWeaponAddr, newAmmo);
+	WriteMem(handleProcess, pReserveAddr, newAmmo);
+	//WriteProcessMemory(handleProcess, (LPVOID)pWeapon, &newAmmo, sizeof(newAmmo), NULL);
+	//WriteProcessMemory(handleProcess, (LPVOID)pReserve, &newAmmo, sizeof(newAmmo), NULL);
 
-	cout << endl;
-	cout << "Enabled infinite primary ammo." << endl;
+
+	//please stop abusing endl 
+	//cout << endl;
+	cout << "\nEnabled infinite primary ammo." << endl;
 	Sleep(3000);
 	system("CLS");
 	displayInstructions();
 }
 
-void infiniteSecondary(const uintptr_t &sWeapon, const uintptr_t &sReserve, const HANDLE &handleProcess)
+void infiniteSecondary(uintptr_t sWeaponAddr, uintptr_t sReserveAddr, HANDLE handleProcess)
 {
 	int newAmmo = 99999;
-	WriteProcessMemory(handleProcess, (LPVOID)sWeapon, &newAmmo, sizeof(newAmmo), NULL);
-	WriteProcessMemory(handleProcess, (LPVOID)sReserve, &newAmmo, sizeof(newAmmo), NULL);
+	WriteMem(handleProcess, sWeaponAddr, newAmmo);
+	WriteMem(handleProcess, sReserveAddr, newAmmo);
+	//WriteProcessMemory(handleProcess, (LPVOID)sWeapon, &newAmmo, sizeof(newAmmo), NULL);
+	//WriteProcessMemory(handleProcess, (LPVOID)sReserve, &newAmmo, sizeof(newAmmo), NULL);
 
-	cout << endl;
-	cout << "Enabled infinite secondary ammo." << endl;
+	//cout << endl;
+	cout << "\nEnabled infinite secondary ammo." << endl;
 	Sleep(3000);
 	system("CLS");
 	displayInstructions();
 }
 
-void infiniteArmour(const uintptr_t &armour, const HANDLE &handleProcess)
+void infiniteArmour(uintptr_t armourAddr, HANDLE handleProcess)
 {
 	int newArmour = 99999;
-	WriteProcessMemory(handleProcess, (LPVOID)armour, &newArmour, sizeof(newArmour), NULL);
+	WriteMem(handleProcess, armourAddr, newArmour);
+	//WriteProcessMemory(handleProcess, (LPVOID)armour, &newArmour, sizeof(newArmour), NULL);
 
-	cout << endl;
-	cout << "Enabled infinite armour." << endl;
+	//cout << endl;
+	cout << "\nEnabled infinite armour." << endl;
 	Sleep(3000);
 	system("CLS");
 	displayInstructions();
 }
 
-void teleport(const uintptr_t &px, const uintptr_t &py, const uintptr_t &pz, const HANDLE &handleProcess)
+void teleport(uintptr_t positionAddr, HANDLE handleProcess)
 {
 	system("CLS");
 	cout << "Enter the co-ordinates separated by spaces you'd like to teleport to." << endl;
-	int x, y, z;
-	cin >> x >> y >> z;
+	Position pos;
+	cin >> pos.x >> pos.y >> pos.z;
 
-	WriteProcessMemory(handleProcess, (LPVOID)px, &x, sizeof(x), NULL);
-	WriteProcessMemory(handleProcess, (LPVOID)py, &y, sizeof(y), NULL);
-	WriteProcessMemory(handleProcess, (LPVOID)pz, &z, sizeof(z), NULL);
+	WriteMem(handleProcess, positionAddr, pos);
+	//WriteProcessMemory(handleProcess, (LPVOID)px, &x, sizeof(x), NULL);
+	//WriteProcessMemory(handleProcess, (LPVOID)py, &y, sizeof(y), NULL);
+	//WriteProcessMemory(handleProcess, (LPVOID)pz, &z, sizeof(z), NULL);
 
-	cout << endl;
-	cout << "Teleported to location." << endl;
+	//cout << endl;
+	cout << "\nTeleported to location." << endl;
 	Sleep(3000);
 	system("CLS");
 	displayInstructions();
 }
 
-DWORD GetProcId(const CHAR *processName)
+//seriously?
+//DWORD GetProcId(const CHAR *processName)
+
+//even this is better -> DWORD GetProcId(const string& processName), you can then use processName.c_str()
+DWORD GetProcId(const char* processName)
 {
 	// https://docs.microsoft.com/en-us/windows/win32/api/tlhelp32/nf-tlhelp32-createtoolhelp32snapshot
 	DWORD procid = 0;
@@ -158,7 +216,8 @@ DWORD GetProcId(const CHAR *processName)
 
 // default for executables is 0x400000, use this if ASLR is turned on or you don't know the module base
 // returns base address of module given process id. accepts process id, and windows wide string of module name.
-uintptr_t GetModuleBaseAddress(DWORD processId, const CHAR *modName)
+//uintptr_t GetModuleBaseAddress(DWORD processId, const CHAR *modName)
+uintptr_t GetModuleBaseAddress(DWORD processId, const char *modName)
 {
 	uintptr_t moduleBaseAddress = 0;
 	HANDLE hSnap = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE | TH32CS_SNAPMODULE32, processId);
@@ -194,6 +253,7 @@ uintptr_t findAddress(HANDLE hProc, uintptr_t ptr, vector<unsigned int> offsets)
 	uintptr_t addr = ptr;
 	for (unsigned int i = 0; i < offsets.size(); ++i)
 	{
+		//i don't understand why did you cast the uintptr_t to BYTE*, which then later converted to LPVOID by the compiler again....
 		ReadProcessMemory(hProc, (BYTE *)addr, &addr, sizeof(addr), 0);
 		addr += offsets[i];
 	}
@@ -202,9 +262,10 @@ uintptr_t findAddress(HANDLE hProc, uintptr_t ptr, vector<unsigned int> offsets)
 
 int main()
 {
-	cout << "This cheat for Assault Cube was made by Robert Motrogeanu for educational purposes and its contents is published freely on my GitHub." << endl;
-	cout << "github.com/robertmotr" << endl;
-	cout << endl;
+	//I SWEAR IF YOU KEEP FLUSHING BUFFER FOR NO REASON >:(
+	cout << "This cheat for Assault Cube was made by Robert Motrogeanu for educational purposes and its contents is published freely on my GitHub.\n";// << endl;
+	cout << "github.com/robertmotr\n" << endl;
+	//cout << endl;
 
 	DWORD process = GetProcId("ac_client.exe");
 	// cast dword to uint just in case it doesnt play well
@@ -222,31 +283,29 @@ int main()
 		uintptr_t moduleBase = GetModuleBaseAddress(process, "ac_client.exe");
 		cout << "Got base address of module: 0x" << hex << moduleBase << endl;
 
-		uintptr_t playerObject = moduleBase + 0x00109B74;
+		uintptr_t playerObjectBaseAddr = moduleBase + 0x00109B74;
 
 		// interesting stuff here, sizeof(unsigned int) on third parameter of this function was returning 6 bytes which caused me a few hours of frustration.
 		// changing it to flat out four bytes fixed it. very strange!
-		if (ReadProcessMemory(hProcess, (BYTE *)playerObject, &playerObject, 4, NULL) == 0)
+		if (ReadProcessMemory(hProcess, (BYTE *)playerObjectBaseAddr, &playerObjectBaseAddr, sizeof(playerObjectBaseAddr), NULL) == 0)
 		{
 			displayError("calling RPM in main() to resolve player object offset");
 		}
 		else
 		{
-			uintptr_t x = playerObject + 0x34;
-			uintptr_t y = playerObject + 0x38;
-			uintptr_t z = playerObject + 0x3C;
+			uintptr_t posAddr = playerObjectBaseAddr + 0x34;
 
-			uintptr_t health = playerObject + 0xF8;
-			uintptr_t armour = playerObject + 0xFC;
+			uintptr_t healthAddr = playerObjectBaseAddr + 0xF8;
+			uintptr_t armourAddr = playerObjectBaseAddr + 0xFC;
 
-			uintptr_t secondaryWeaponReserve = playerObject + 0x114;
-			uintptr_t secondaryWeapon = playerObject + 0x13C;
+			uintptr_t secondaryWeaponReserveAddr = playerObjectBaseAddr + 0x114;
+			uintptr_t secondaryWeaponAddr = playerObjectBaseAddr + 0x13C;
 
-			uintptr_t primaryWeaponReserve = playerObject + 0x128;
-			uintptr_t primaryWeapon = playerObject + 0x150;
+			uintptr_t primaryWeaponReserveAddr = playerObjectBaseAddr + 0x128;
+			uintptr_t primaryWeaponAddr = playerObjectBaseAddr + 0x150;
 
-			cout << "Menu has successfully started." << endl;
-			cout << endl;
+			cout << "Menu has successfully started.\n" << endl;
+			//cout << endl;
 			Sleep(3000);
 			system("CLS");
 			displayInstructions();
@@ -256,19 +315,19 @@ int main()
 				// https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getkeystate
 				// if short return value has MSB of 1, then key is down. use bitwise AND to determine if this is true
 				if(GetAsyncKeyState(VK_NUMPAD0) & 0x8000) {
-					godMode(health, hProcess);
+					godMode(healthAddr, hProcess);
 				}
 				else if(GetAsyncKeyState(VK_NUMPAD1) & 0x8000) {
-					infinitePrimary(primaryWeapon, primaryWeaponReserve, hProcess);
+					infinitePrimary(primaryWeaponAddr, primaryWeaponReserveAddr, hProcess);
 				}
 				else if(GetAsyncKeyState(VK_NUMPAD2) & 0x8000) {
-					infiniteSecondary(secondaryWeapon, secondaryWeaponReserve, hProcess);
+					infiniteSecondary(secondaryWeaponAddr, secondaryWeaponReserveAddr, hProcess);
 				}
 				else if(GetAsyncKeyState(VK_NUMPAD3) & 0x8000) {
-					infiniteArmour(armour, hProcess);
+					infiniteArmour(armourAddr, hProcess);
 				}
 				else if(GetAsyncKeyState(VK_NUMPAD4) & 0x8000) {
-					teleport(x, y, z, hProcess);
+					teleport(posAddr, hProcess);
 				}
 			}
 		}
